@@ -1,0 +1,20 @@
+▼特徴量詳細
+
+ヘッダ名称                     値例                               データ型    説明
+---------------------------------------------------------------------------------------------
+id                           0                                  int64      データID
+GrossApproval                23000                              int64      融資承認額（総額）
+SBAGuaranteedApproval        7093                               int64      融資額の補償金額
+ApprovalFiscalYear           2020                               int64      融資承認年度
+Subprogram                   FA$TRK (Small Loan Express)        str        ローンの種類
+InitialInterestRate          11.92                              float64    初期金利
+FixedOrVariableInterestInd   V                                  str        固定金利(F)または変動金利(V)
+TermInMonths                 84                                 int64      融資期間（月単位）
+NaicsSector                  Accommodation_food services        str        産業の大分類
+CongressionalDistrict        27                                 int        借入者の住所が属する選挙区
+BusinessType                 CORPORATION                        str        借入者の事業形態
+BusinessAge                  Unanswered                         str        事業の年数区分
+RevolverStatus               0                                  int64      定期貸付（0）かリボルビング（1）か
+JobsSupported                1                                  int64      借入者事業者の雇用数（借入者の自己申告）
+CollateralInd                N                                  str        担保の有無（借入者の自己申告）
+LoanStatus(目的変数)          1                                  int64      ローンの状態（目的変数: 1 = デフォルト, 0 = デフォルトしていない）
