@@ -1,0 +1,22 @@
+{
+  "categorical_features": [
+    "Subprogram",
+    "FixedOrVariableInterestInd",
+    "NaicsSector",
+    "BusinessType",
+    "BusinessAge",
+    "CollateralInd"
+  ],
+  "numerical_features": [
+    "GrossApproval",
+    "SBAGuaranteedApproval",
+    "ApprovalFiscalYear",
+    "InitialInterestRate",
+    "TermInMonths",
+    "CongressionalDistrict",
+    "RevolverStatus",
+    "JobsSupported"
+  ],
+  "n_train": 7552,
+  "n_features": 49
+}

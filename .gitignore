@@ -1,0 +1,21 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+
+# Environment
+.env
+venv/
+.venv/
+
+# Dataset outputs - ignore binary artifacts
+*.npz
+*.npy
+*.pkl
+*.joblib
+*.model
+*.bin
+
+# Ignore cached or temporary files
+.ipynb_checkpoints/
+*.log
+
