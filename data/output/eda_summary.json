@@ -1,0 +1,43 @@
+{
+  "n_rows": 7552,
+  "n_cols": 16,
+  "missing_by_column": {
+    "id": 0,
+    "GrossApproval": 0,
+    "SBAGuaranteedApproval": 0,
+    "ApprovalFiscalYear": 0,
+    "Subprogram": 0,
+    "InitialInterestRate": 0,
+    "FixedOrVariableInterestInd": 0,
+    "TermInMonths": 0,
+    "NaicsSector": 0,
+    "CongressionalDistrict": 0,
+    "BusinessType": 0,
+    "BusinessAge": 0,
+    "RevolverStatus": 0,
+    "JobsSupported": 0,
+    "CollateralInd": 0,
+    "LoanStatus": 0
+  },
+  "target_distribution": {
+    "0": 0.8723516949152542,
+    "1": 0.12764830508474576
+  },
+  "feature_names": [
+    "id",
+    "GrossApproval",
+    "SBAGuaranteedApproval",
+    "ApprovalFiscalYear",
+    "Subprogram",
+    "InitialInterestRate",
+    "FixedOrVariableInterestInd",
+    "TermInMonths",
+    "NaicsSector",
+    "CongressionalDistrict",
+    "BusinessType",
+    "BusinessAge",
+    "RevolverStatus",
+    "JobsSupported",
+    "CollateralInd"
+  ]
+}
