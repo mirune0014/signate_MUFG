@@ -22,6 +22,7 @@ def main():
     if train.isnull().values.any() or test.isnull().values.any():
         raise ValueError('Missing values found in datasets')
 
+
     # --- feature engineering ---
     interest_mean = train['InitialInterestRate'].mean()
     interest_bins = np.quantile(train['InitialInterestRate'], [0, 0.25, 0.5, 0.75, 1.0])
@@ -50,6 +51,7 @@ def main():
     X_train = add_features(train.drop(columns=[target_col]))
     y_train = train[target_col]
     X_test = add_features(test.copy())
+
 
     cat_cols = X_train.select_dtypes(include='object').columns.tolist()
     num_cols = [c for c in X_train.columns if c not in cat_cols + [id_col]]
