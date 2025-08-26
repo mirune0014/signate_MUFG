@@ -33,6 +33,8 @@ def main():
         'Change of Ownership': 5,
         'Unanswered': -1,
     }
+    naics_interest_mean = train.groupby('NaicsSector')['InitialInterestRate'].mean()
+    naics_gross_mean = train.groupby('NaicsSector')['GrossApproval'].mean()
 
     def add_features(df: pd.DataFrame) -> pd.DataFrame:
         df = df.copy()
@@ -46,6 +48,14 @@ def main():
             df['InitialInterestRate'], interest_bins[1:-1], right=True
         ).astype(str)
         df['BusinessAgeNum'] = df['BusinessAge'].map(business_age_map)
+        df['InterestRatePerTerm'] = df['InitialInterestRate'] / df['TermInMonths']
+        df['JobsSupportedRatio'] = df['JobsSupported'] / df['GrossApproval']
+        df['TermBucket'] = pd.cut(
+            df['TermInMonths'], bins=[0, 60, 120, 180, 240, 360], labels=False, include_lowest=True
+        ).astype(str)
+        df['ProgramBusinessType'] = df['Subprogram'] + '_' + df['BusinessType']
+        df['SectorInterestDiff'] = df['InitialInterestRate'] - df['NaicsSector'].map(naics_interest_mean)
+        df['SectorApprovalDiff'] = df['GrossApproval'] - df['NaicsSector'].map(naics_gross_mean)
         return df
 
     X_train = add_features(train.drop(columns=[target_col]))
