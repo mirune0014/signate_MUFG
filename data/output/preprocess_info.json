@@ -5,7 +5,8 @@
     "NaicsSector",
     "BusinessType",
     "BusinessAge",
-    "CollateralInd"
+    "CollateralInd",
+    "InterestRateBucket"
   ],
   "numerical_features": [
     "GrossApproval",
@@ -15,8 +16,12 @@
     "TermInMonths",
     "CongressionalDistrict",
     "RevolverStatus",
-    "JobsSupported"
+    "JobsSupported",
+    "GrossApprovalPerJob",
+    "SBAGuaranteedApprovalPerJob",
+    "GrossToGuaranteedApprovalRatio",
+    "ApprovalDuration"
   ],
   "n_train": 7552,
-  "n_features": 49
+  "n_features": 60
 }
