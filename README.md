@@ -4,12 +4,12 @@ This repository contains a full pipeline for the SIGNATE competition on predicti
 
 ## Environment
 - Python 3.9+
-- numpy, pandas, scikit-learn, lightgbm, xgboost, optuna
+- numpy, pandas, scikit-learn, lightgbm, xgboost, catboost, optuna, category-encoders
 
 Install dependencies:
 
 ```bash
-pip install numpy pandas scikit-learn lightgbm xgboost optuna
+pip install numpy pandas scikit-learn lightgbm xgboost catboost optuna category-encoders
 ```
 
 ## Usage
@@ -21,15 +21,37 @@ pip install numpy pandas scikit-learn lightgbm xgboost optuna
    ```bash
    python src/train.py
    ```
-3. **Train XGBoost model** for comparison.
+3. **Train variants of LightGBM**
+   - with class weights:
+     ```bash
+     python src/train_weighted.py
+     ```
+   - with target encoding features:
+     ```bash
+     python src/train_te.py
+     ```
+4. **Train alternative models**
+   - XGBoost:
+     ```bash
+     python src/train_xgb.py
+     ```
+   - CatBoost:
+     ```bash
+     python src/train_catboost.py
+     ```
+5. **Search for a better decision threshold** using validation probabilities.
    ```bash
-   python src/train_xgb.py
+   python src/threshold_opt.py
    ```
-4. **(Optional) Hyperparameter optimization** for LightGBM using Optuna.
+6. **Evaluate ensemble performance** by averaging model probabilities.
+   ```bash
+   python src/ensemble.py
+   ```
+7. **(Optional) Hyperparameter optimization** for LightGBM using Optuna.
    ```bash
    python src/optimize.py
    ```
-5. **Generate submission** by training final models on all data and ensembling LightGBM and XGBoost.
+8. **Generate submission** by training final models on all data and ensembling LightGBM and XGBoost.
    ```bash
    python src/predict.py
    ```
