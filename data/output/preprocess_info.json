@@ -17,7 +17,6 @@
     "CongressionalDistrict",
     "RevolverStatus",
     "JobsSupported",
-
     "GrossApproval_log",
     "SBAGuaranteedApproval_log",
     "MonthlyPayment",
@@ -29,4 +28,3 @@
   "n_train": 7552,
   "n_features": 60
 }
-
