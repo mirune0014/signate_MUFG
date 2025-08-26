@@ -1,1 +1,1 @@
-    base_dir = Path(__file__).resolve().parents[1]
+r"C:\Users\miots\ruruprojects3\MUFG\signate_MUFG\data\output"

@@ -32,7 +32,5 @@
     "SectorApprovalDiff"
   ],
   "n_train": 7552,
-
   "n_features": 95
-
 }
