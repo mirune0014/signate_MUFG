@@ -8,7 +8,9 @@ from sklearn.model_selection import StratifiedKFold
 
 
 def main():
+
     output_dir = Path(r"C:\Users\miots\ruruprojects3\MUFG\signate_MUFG\data\output")
+
     data = np.load(output_dir / "train_preprocessed.npz")
     X = data["X"]
     y = data["y"]

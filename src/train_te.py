@@ -34,7 +34,9 @@ def add_features(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def main():
+
     data_dir = Path(r"C:\Users\miots\ruruprojects3\MUFG\signate_MUFG\data\input")
+
     train = pd.read_csv(data_dir / 'train.csv')
     target_col = 'LoanStatus'
     id_col = 'id'
@@ -78,7 +80,9 @@ def main():
         scores.append(f1_score(y[valid_idx], preds))
 
     results = {"f1_scores": scores, "mean_f1": float(np.mean(scores))}
+
     output_dir = Path(r"C:\Users\miots\ruruprojects3\MUFG\signate_MUFG\data\output")
+
     with open(output_dir / 'te_cv_results.json', 'w', encoding='utf-8') as f:
         json.dump(results, f, ensure_ascii=False, indent=2)
 
