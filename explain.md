@@ -53,6 +53,12 @@
 
 ## 推論手順
 1. `python src/preprocess.py` を実行して特徴量行列を生成する。
-2. `python src/train.py` で LightGBM の交差検証スコアを確認する。
-3. `python src/train_xgb.py` で XGBoost を学習し、結果を比較する。
-4. `python src/predict.py` を実行すると、LightGBM と XGBoost のアンサンブルによる予測結果が `data/output/submit.csv` に出力される。
+2. 各種モデルを学習する。
+   - `python src/train.py` : LightGBM ベースライン
+   - `python src/train_weighted.py` : クラス重み付き LightGBM
+   - `python src/train_te.py` : ターゲットエンコード LightGBM
+   - `python src/train_xgb.py` : XGBoost
+   - `python src/train_catboost.py` : CatBoost
+3. `python src/threshold_opt.py` で検証データから最適なしきい値を探索する。
+4. `python src/ensemble.py` で各モデルの確率を平均化し F1 スコアを評価する。
+5. `python src/predict.py` を実行すると、LightGBM と XGBoost のアンサンブルによる予測結果が `data/output/submit.csv` に出力される。

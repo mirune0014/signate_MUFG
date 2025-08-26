@@ -14,6 +14,10 @@ def main():
     X = data["X"]
     y = data["y"]
 
+    pos = np.sum(y == 1)
+    neg = len(y) - pos
+    base_weight = neg / pos
+
     def objective(trial):
         params = {
             "objective": "binary",
@@ -25,6 +29,9 @@ def main():
             "feature_fraction": trial.suggest_float("feature_fraction", 0.7, 1.0),
             "bagging_fraction": trial.suggest_float("bagging_fraction", 0.7, 1.0),
             "bagging_freq": 0,
+            "lambda_l1": trial.suggest_float("lambda_l1", 1e-8, 10.0, log=True),
+            "lambda_l2": trial.suggest_float("lambda_l2", 1e-8, 10.0, log=True),
+            "scale_pos_weight": trial.suggest_float("scale_pos_weight", base_weight * 0.5, base_weight * 1.5),
             "verbose": -1,
         }
         cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
@@ -44,7 +51,7 @@ def main():
         return float(np.mean(scores))
 
     study = optuna.create_study(direction="maximize")
-    study.optimize(objective, n_trials=20)
+    study.optimize(objective, n_trials=30)
 
     best = {
         "best_params": study.best_params,
