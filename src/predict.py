@@ -8,8 +8,8 @@ import xgboost as xgb
 
 
 def main():
-    data_dir = Path("data/input")
-    output_dir = Path("data/output")
+    data_dir = Path(r"C:\Users\miots\ruruprojects3\MUFG\signate_MUFG\data\input")
+    output_dir = Path(r"C:\Users\miots\ruruprojects3\MUFG\signate_MUFG\data\output")
     train_data = np.load(output_dir / "train_preprocessed.npz")
     X_train = train_data["X"]
     y_train = train_data["y"]
