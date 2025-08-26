@@ -1,14 +1,14 @@
 {
   "best_params": {
-    "learning_rate": 0.036311367676574766,
-    "num_leaves": 40,
-    "max_depth": 16,
-    "min_data_in_leaf": 11,
-    "feature_fraction": 0.8844449742958657,
-    "bagging_fraction": 0.9937588131178343,
-    "lambda_l1": 2.167924766414708e-08,
-    "lambda_l2": 0.2011231861423218,
-    "scale_pos_weight": 3.4180776321995463
+    "learning_rate": 0.04243372464257514,
+    "num_leaves": 60,
+    "max_depth": 15,
+    "min_data_in_leaf": 40,
+    "feature_fraction": 0.8823983129163437,
+    "bagging_fraction": 0.9361113648751545,
+    "lambda_l1": 0.0008424221011118771,
+    "lambda_l2": 0.0010193882070891934,
+    "scale_pos_weight": 3.4849849821420666
   },
-  "best_score": 0.6226138248112183
+  "best_score": 0.6173097303815013
 }
