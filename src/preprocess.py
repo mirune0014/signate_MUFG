@@ -22,9 +22,36 @@ def main():
     if train.isnull().values.any() or test.isnull().values.any():
         raise ValueError('Missing values found in datasets')
 
-    X_train = train.drop(columns=[target_col])
+
+    # --- feature engineering ---
+    interest_mean = train['InitialInterestRate'].mean()
+    interest_bins = np.quantile(train['InitialInterestRate'], [0, 0.25, 0.5, 0.75, 1.0])
+    business_age_map = {
+        'Startup, Loan Funds will Open Business': 0,
+        'New Business or 2 years or less': 2,
+        'Existing or more than 2 years old': 5,
+        'Change of Ownership': 5,
+        'Unanswered': -1,
+    }
+
+    def add_features(df: pd.DataFrame) -> pd.DataFrame:
+        df = df.copy()
+        df['GrossApproval_log'] = np.log1p(df['GrossApproval'])
+        df['SBAGuaranteedApproval_log'] = np.log1p(df['SBAGuaranteedApproval'])
+        df['MonthlyPayment'] = df['GrossApproval'] / df['TermInMonths']
+        df['ApprovalRatio'] = df['SBAGuaranteedApproval'] / df['GrossApproval']
+        df['ApprovalDiff'] = df['GrossApproval'] - df['SBAGuaranteedApproval']
+        df['InterestRateDiff'] = df['InitialInterestRate'] - interest_mean
+        df['InterestRateBucket'] = np.digitize(
+            df['InitialInterestRate'], interest_bins[1:-1], right=True
+        ).astype(str)
+        df['BusinessAgeNum'] = df['BusinessAge'].map(business_age_map)
+        return df
+
+    X_train = add_features(train.drop(columns=[target_col]))
     y_train = train[target_col]
-    X_test = test.copy()
+    X_test = add_features(test.copy())
+
 
     cat_cols = X_train.select_dtypes(include='object').columns.tolist()
     num_cols = [c for c in X_train.columns if c not in cat_cols + [id_col]]

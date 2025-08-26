@@ -49,4 +49,10 @@
 - 登録情報が不正確な場合  
 - その他、事務局が不当と判断した場合  
 
-検収をクリアした候補者の中から、正式な入賞者と順位を確定。失格者が出た場合は、次点者が繰り上がりとなる。  
+検収をクリアした候補者の中から、正式な入賞者と順位を確定。失格者が出た場合は、次点者が繰り上がりとなる。
+
+## 推論手順
+1. `python src/preprocess.py` を実行して特徴量行列を生成する。
+2. `python src/train.py` で LightGBM の交差検証スコアを確認する。
+3. `python src/train_xgb.py` で XGBoost を学習し、結果を比較する。
+4. `python src/predict.py` を実行すると、LightGBM と XGBoost のアンサンブルによる予測結果が `data/output/submit.csv` に出力される。

@@ -17,11 +17,16 @@
     "CongressionalDistrict",
     "RevolverStatus",
     "JobsSupported",
-    "GrossApprovalPerJob",
-    "SBAGuaranteedApprovalPerJob",
-    "GrossToGuaranteedApprovalRatio",
-    "ApprovalDuration"
+
+    "GrossApproval_log",
+    "SBAGuaranteedApproval_log",
+    "MonthlyPayment",
+    "ApprovalRatio",
+    "ApprovalDiff",
+    "InterestRateDiff",
+    "BusinessAgeNum"
   ],
   "n_train": 7552,
   "n_features": 60
 }
+
