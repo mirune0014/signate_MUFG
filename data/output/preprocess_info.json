@@ -6,7 +6,9 @@
     "BusinessType",
     "BusinessAge",
     "CollateralInd",
-    "InterestRateBucket"
+    "InterestRateBucket",
+    "TermBucket",
+    "ProgramBusinessType"
   ],
   "numerical_features": [
     "GrossApproval",
@@ -17,16 +19,18 @@
     "CongressionalDistrict",
     "RevolverStatus",
     "JobsSupported",
-
     "GrossApproval_log",
     "SBAGuaranteedApproval_log",
     "MonthlyPayment",
     "ApprovalRatio",
     "ApprovalDiff",
     "InterestRateDiff",
-    "BusinessAgeNum"
+    "BusinessAgeNum",
+    "InterestRatePerTerm",
+    "JobsSupportedRatio",
+    "SectorInterestDiff",
+    "SectorApprovalDiff"
   ],
   "n_train": 7552,
-  "n_features": 60
+  "n_features": 95
 }
-
