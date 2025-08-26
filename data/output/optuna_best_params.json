@@ -1,5 +1,6 @@
 {
   "best_params": {
+
     "learning_rate": 0.036311367676574766,
     "num_leaves": 40,
     "max_depth": 16,
@@ -11,4 +12,5 @@
     "scale_pos_weight": 3.4180776321995463
   },
   "best_score": 0.6226138248112183
+
 }

@@ -8,8 +8,8 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 
 def main():
-    data_dir = Path('data/input')
-    output_dir = Path('data/output')
+    data_dir = Path(r'C:\Users\miots\ruruprojects3\MUFG\signate_MUFG\data\input')
+    output_dir = Path(r'C:\Users\miots\ruruprojects3\MUFG\signate_MUFG\data\output')
     output_dir.mkdir(parents=True, exist_ok=True)
 
     train = pd.read_csv(data_dir / 'train.csv')
