@@ -1,5 +1,19 @@
 {
-
-  "ensemble_f1": 0.6063779152784389
-
+  "lgb_f1": 0.608652900688299,
+  "lgb_threshold": 0.32,
+  "xgb_f1": 0.6160035762181493,
+  "xgb_threshold": 0.21,
+  "cat_f1": 0.6226164079822617,
+  "cat_threshold": 0.25,
+  "simple_avg_f1": 0.6213592233009708,
+  "simple_avg_threshold": 0.23,
+  "weighted_avg_f1": 0.6213592233009708,
+  "weighted_avg_threshold": 0.23,
+  "stacking_f1": 0.6233409610983982,
+  "stacking_threshold": 0.18,
+  "weighted_weights": [
+    0.608652900688299,
+    0.6160035762181493,
+    0.6226164079822617
+  ]
 }

@@ -4,7 +4,7 @@ from pathlib import Path
 
 import numpy as np
 import optuna
-import lightgbm as lgb
+import xgboost as xgb
 from sklearn.metrics import f1_score
 from sklearn.model_selection import StratifiedKFold
 
@@ -21,33 +21,28 @@ def main(trials: int) -> None:
 
     def objective(trial: optuna.trial.Trial) -> float:
         params = {
-            "objective": "binary",
-            "metric": "None",
             "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3, log=True),
-            "num_leaves": trial.suggest_int("num_leaves", 16, 128),
-            "max_depth": trial.suggest_int("max_depth", 3, 16),
-            "min_data_in_leaf": trial.suggest_int("min_data_in_leaf", 20, 200),
-            "feature_fraction": trial.suggest_float("feature_fraction", 0.5, 1.0),
-            "bagging_fraction": trial.suggest_float("bagging_fraction", 0.5, 1.0),
-            "bagging_freq": trial.suggest_int("bagging_freq", 0, 10),
-            "lambda_l1": trial.suggest_float("lambda_l1", 1e-8, 10.0, log=True),
-            "lambda_l2": trial.suggest_float("lambda_l2", 1e-8, 10.0, log=True),
+            "max_depth": trial.suggest_int("max_depth", 3, 10),
+            "min_child_weight": trial.suggest_float("min_child_weight", 1, 10),
+            "gamma": trial.suggest_float("gamma", 0, 5),
+            "subsample": trial.suggest_float("subsample", 0.6, 1.0),
+            "colsample_bytree": trial.suggest_float("colsample_bytree", 0.6, 1.0),
+            "reg_alpha": trial.suggest_float("reg_alpha", 1e-8, 10.0, log=True),
+            "reg_lambda": trial.suggest_float("reg_lambda", 1e-8, 10.0, log=True),
             "scale_pos_weight": trial.suggest_float("scale_pos_weight", base_weight * 0.5, base_weight * 1.5),
-            "verbose": -1,
+            "n_estimators": trial.suggest_int("n_estimators", 100, 500),
+            "tree_method": "hist",
+            "eval_metric": "logloss",
+            "n_jobs": -1,
+            "verbosity": 0,
+            "random_state": 42,
         }
         cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
         scores = []
         for train_idx, valid_idx in cv.split(X, y):
-            train_data = lgb.Dataset(X[train_idx], label=y[train_idx])
-            valid_data = lgb.Dataset(X[valid_idx], label=y[valid_idx])
-            model = lgb.train(
-                params,
-                train_data,
-                valid_sets=[valid_data],
-                num_boost_round=100,
-                callbacks=[lgb.log_evaluation(0)],
-            )
-            preds = (model.predict(X[valid_idx]) > 0.5).astype(int)
+            model = xgb.XGBClassifier(**params)
+            model.fit(X[train_idx], y[train_idx])
+            preds = (model.predict_proba(X[valid_idx])[:, 1] > 0.5).astype(int)
             scores.append(f1_score(y[valid_idx], preds))
         return float(np.mean(scores))
 
@@ -56,7 +51,7 @@ def main(trials: int) -> None:
 
     best = {"best_params": study.best_params, "best_score": study.best_value}
     output_dir.mkdir(parents=True, exist_ok=True)
-    with open(output_dir / "lgb_optuna_results.json", "w", encoding="utf-8") as f:
+    with open(output_dir / "xgb_optuna_results.json", "w", encoding="utf-8") as f:
         json.dump(best, f, ensure_ascii=False, indent=2)
 
 

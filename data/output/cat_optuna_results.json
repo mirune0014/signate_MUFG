@@ -1,0 +1,10 @@
+{
+  "best_params": {
+    "iterations": 381,
+    "depth": 6,
+    "learning_rate": 0.23217714413146942,
+    "l2_leaf_reg": 0.0014405998993423936,
+    "subsample": 0.6514996744945156
+  },
+  "best_score": 0.5394094068030216
+}
