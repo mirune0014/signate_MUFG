@@ -8,8 +8,9 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 
 def main():
-    data_dir = Path(r'C:\Users\miots\ruruprojects3\MUFG\signate_MUFG\data\input')
-    output_dir = Path(r'C:\Users\miots\ruruprojects3\MUFG\signate_MUFG\data\output')
+    base_dir = Path(__file__).resolve().parents[1]
+    data_dir = base_dir / "data" / "input"
+    output_dir = base_dir / "data" / "output"
     output_dir.mkdir(parents=True, exist_ok=True)
 
     train = pd.read_csv(data_dir / 'train.csv')
@@ -35,6 +36,16 @@ def main():
     }
     naics_interest_mean = train.groupby('NaicsSector')['InitialInterestRate'].mean()
     naics_gross_mean = train.groupby('NaicsSector')['GrossApproval'].mean()
+    # aggregated stats by program
+    program_default = train.groupby('Subprogram')[target_col].mean()
+    sector_default = train.groupby('NaicsSector')[target_col].mean()
+    program_gross_mean = train.groupby('Subprogram')['GrossApproval'].mean()
+    sector_term_mean = train.groupby('NaicsSector')['TermInMonths'].mean()
+    program_term_mean = train.groupby('Subprogram')['TermInMonths'].mean()
+    overall_default = train[target_col].mean()
+    # bins for loan amount and term from training data
+    gross_bins = pd.qcut(train['GrossApproval'], q=5, retbins=True, duplicates='drop')[1]
+    term_bins = pd.qcut(train['TermInMonths'], q=5, retbins=True, duplicates='drop')[1]
 
     def add_features(df: pd.DataFrame) -> pd.DataFrame:
         df = df.copy()
@@ -56,6 +67,18 @@ def main():
         df['ProgramBusinessType'] = df['Subprogram'] + '_' + df['BusinessType']
         df['SectorInterestDiff'] = df['InitialInterestRate'] - df['NaicsSector'].map(naics_interest_mean)
         df['SectorApprovalDiff'] = df['GrossApproval'] - df['NaicsSector'].map(naics_gross_mean)
+        df['ProgramDefaultDiff'] = df['Subprogram'].map(program_default) - overall_default
+        df['SectorDefaultDiff'] = df['NaicsSector'].map(sector_default) - overall_default
+        df['ProgramLoanDiff'] = df['GrossApproval'] - df['Subprogram'].map(program_gross_mean)
+        df['SectorTermDiff'] = df['TermInMonths'] - df['NaicsSector'].map(sector_term_mean)
+        df['ProgramTermDiff'] = df['TermInMonths'] - df['Subprogram'].map(program_term_mean)
+        df['SectorProgram'] = df['NaicsSector'] + '_' + df['Subprogram']
+        df['GrossApprovalBin'] = pd.cut(
+            df['GrossApproval'], bins=gross_bins, labels=False, include_lowest=True
+        ).astype(str)
+        df['TermInMonthsBin'] = pd.cut(
+            df['TermInMonths'], bins=term_bins, labels=False, include_lowest=True
+        ).astype(str)
         return df
 
     X_train = add_features(train.drop(columns=[target_col]))

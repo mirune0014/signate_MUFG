@@ -59,6 +59,11 @@
    - `python src/train_te.py` : ターゲットエンコード LightGBM
    - `python src/train_xgb.py` : XGBoost
    - `python src/train_catboost.py` : CatBoost
+   - `python src/train_resample.py` : SMOTE・UnderSampling の比較
+   - `python src/train_focal.py` : Focal Loss を用いた LightGBM
+   - `python src/optimize.py` : LightGBM のハイパーパラメータ探索
+   - `python src/optimize_xgb.py` : XGBoost のハイパーパラメータ探索
+   - `python src/optimize_catboost.py` : CatBoost のハイパーパラメータ探索
 3. `python src/threshold_opt.py` で検証データから最適なしきい値を探索する。
-4. `python src/ensemble.py` で各モデルの確率を平均化し F1 スコアを評価する。
+4. `python src/ensemble.py` で LightGBM・XGBoost・CatBoost の確率から単純平均・F1 重み付け平均・ロジスティック回帰スタッキングを比較し、結果を `data/output/ensemble_results.json` に保存する。
 5. `python src/predict.py` を実行すると、LightGBM と XGBoost のアンサンブルによる予測結果が `data/output/submit.csv` に出力される。
