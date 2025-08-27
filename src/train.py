@@ -48,9 +48,13 @@ def main():
         oof = model.predict(X[valid_idx])
         oof_preds[valid_idx] = oof
         preds = (oof > 0.5).astype(int)
+        oof = model.predict(X[valid_idx])
+        oof_preds[valid_idx] = oof
+        preds = (oof > 0.5).astype(int)
         score = f1_score(y[valid_idx], preds)
         scores.append(score)
 
+    np.save(output_dir / "oof_preds.npy", oof_preds)
     np.save(output_dir / "oof_preds.npy", oof_preds)
     results = {"f1_scores": scores, "mean_f1": float(np.mean(scores))}
     with open(output_dir / "cv_results.json", "w", encoding="utf-8") as f:
