@@ -8,13 +8,18 @@ import xgboost as xgb
 
 
 def main():
-    data_dir = Path(r"C:\Users\miots\ruruprojects3\MUFG\signate_MUFG\data\input")
-    output_dir = Path(r"C:\Users\miots\ruruprojects3\MUFG\signate_MUFG\data\output")
+    base_dir = Path(__file__).resolve().parents[1]
+    data_dir = base_dir / "data" / "input"
+    output_dir = base_dir / "data" / "output"
     train_data = np.load(output_dir / "train_preprocessed.npz")
     X_train = train_data["X"]
     y_train = train_data["y"]
     test_data = np.load(output_dir / "test_preprocessed.npz")
     X_test = test_data["X"]
+
+    pos = np.sum(y_train == 1)
+    neg = len(y_train) - pos
+    scale_pos_weight = neg / pos
 
     params_path = output_dir / "optuna_best_params.json"
     if params_path.exists():
@@ -23,7 +28,13 @@ def main():
     else:
         best_params = {"learning_rate": 0.1, "num_leaves": 31}
 
-    lgb_params = {"objective": "binary", "metric": "None", "verbose": -1, **best_params}
+    lgb_params = {
+        "objective": "binary",
+        "metric": "None",
+        "verbose": -1,
+        "scale_pos_weight": scale_pos_weight,
+        **best_params,
+    }
     lgb_model = lgb.train(
         lgb_params,
         lgb.Dataset(X_train, label=y_train),
@@ -41,16 +52,27 @@ def main():
         n_jobs=-1,
         random_state=42,
         verbosity=0,
+        scale_pos_weight=scale_pos_weight,
     )
     xgb_model.fit(X_train, y_train)
     xgb_pred = xgb_model.predict_proba(X_test)[:, 1]
 
     pred_prob = (lgb_pred + xgb_pred) / 2
-    pred = (pred_prob > 0.5).astype(int)
+
+    thr_path = output_dir / "threshold_results.json"
+    if thr_path.exists():
+        with open(thr_path, "r", encoding="utf-8") as f:
+            threshold = json.load(f)["best_threshold"]
+    else:
+        threshold = 0.5
+
+    pred = (pred_prob > threshold).astype(int)
 
     test_ids = pd.read_csv(data_dir / "test.csv")["id"]
     submission = pd.DataFrame({"Id": test_ids, "LoanStatus": pred})
-    submission.to_csv(output_dir / "submit5.csv", index=False, header=False)
+
+    submission.to_csv(output_dir / "submit.csv", index=False, header=False)
+
 
 
 if __name__ == "__main__":
