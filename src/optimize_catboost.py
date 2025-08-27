@@ -1,7 +1,9 @@
+import argparse
 import json
 from pathlib import Path
 
 import numpy as np
+import optuna
 import pandas as pd
 from catboost import CatBoostClassifier
 from sklearn.metrics import f1_score
@@ -65,7 +67,7 @@ def add_features(df: pd.DataFrame,
     return df
 
 
-def main() -> None:
+def main(trials: int) -> None:
     base_dir = Path(__file__).resolve().parents[1]
     data_dir = base_dir / "data" / "input"
     output_dir = base_dir / "data" / "output"
@@ -81,38 +83,37 @@ def main() -> None:
     cat_cols = X.select_dtypes(include='object').columns.tolist()
     X = X.drop(columns=[id_col])
 
-    params = {
-        "iterations": 500,
-        "depth": 6,
-        "learning_rate": 0.1,
-        "l2_leaf_reg": 3.0,
-        "loss_function": "Logloss",
-        "eval_metric": "F1",
-        "subsample": 0.8,
-        "verbose": False,
-        "random_state": 42,
-    }
-    opt_path = output_dir / "cat_optuna_results.json"
-    if opt_path.exists():
-        with open(opt_path, "r", encoding="utf-8") as f:
-            params.update(json.load(f)["best_params"])
-        params["verbose"] = False
-        params["loss_function"] = "Logloss"
-        params["eval_metric"] = "F1"
-        params["random_state"] = 42
+    def objective(trial: optuna.trial.Trial) -> float:
+        params = {
+            "iterations": trial.suggest_int("iterations", 200, 600),
+            "depth": trial.suggest_int("depth", 4, 8),
+            "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3, log=True),
+            "l2_leaf_reg": trial.suggest_float("l2_leaf_reg", 1e-3, 10.0, log=True),
+            "subsample": trial.suggest_float("subsample", 0.6, 1.0),
+            "loss_function": "Logloss",
+            "eval_metric": "F1",
+            "verbose": False,
+            "random_state": 42,
+        }
+        cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+        scores = []
+        for train_idx, valid_idx in cv.split(X, y):
+            model = CatBoostClassifier(**params)
+            model.fit(X.iloc[train_idx], y[train_idx], cat_features=cat_cols)
+            preds = (model.predict_proba(X.iloc[valid_idx])[:, 1] > 0.5).astype(int)
+            scores.append(f1_score(y[valid_idx], preds))
+        return float(np.mean(scores))
 
-    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
-    scores = []
-    for train_idx, valid_idx in cv.split(X, y):
-        model = CatBoostClassifier(**params)
-        model.fit(X.iloc[train_idx], y[train_idx], cat_features=cat_cols)
-        preds = (model.predict_proba(X.iloc[valid_idx])[:, 1] > 0.5).astype(int)
-        scores.append(f1_score(y[valid_idx], preds))
+    study = optuna.create_study(direction="maximize")
+    study.optimize(objective, n_trials=trials)
 
-    results = {"f1_scores": scores, "mean_f1": float(np.mean(scores))}
-    with open(output_dir / 'cat_cv_results.json', 'w', encoding='utf-8') as f:
-        json.dump(results, f, ensure_ascii=False, indent=2)
+    best = {"best_params": study.best_params, "best_score": study.best_value}
+    with open(output_dir / "cat_optuna_results.json", "w", encoding="utf-8") as f:
+        json.dump(best, f, ensure_ascii=False, indent=2)
 
 
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--trials", type=int, default=50)
+    args = parser.parse_args()
+    main(args.trials)

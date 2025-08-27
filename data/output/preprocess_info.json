@@ -8,7 +8,10 @@
     "CollateralInd",
     "InterestRateBucket",
     "TermBucket",
-    "ProgramBusinessType"
+    "ProgramBusinessType",
+    "SectorProgram",
+    "GrossApprovalBin",
+    "TermInMonthsBin"
   ],
   "numerical_features": [
     "GrossApproval",
@@ -29,8 +32,13 @@
     "InterestRatePerTerm",
     "JobsSupportedRatio",
     "SectorInterestDiff",
-    "SectorApprovalDiff"
+    "SectorApprovalDiff",
+    "ProgramDefaultDiff",
+    "SectorDefaultDiff",
+    "ProgramLoanDiff",
+    "SectorTermDiff",
+    "ProgramTermDiff"
   ],
   "n_train": 7552,
-  "n_features": 95
+  "n_features": 233
 }
