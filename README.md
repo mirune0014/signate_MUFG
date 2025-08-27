@@ -13,6 +13,11 @@ pip install numpy pandas scikit-learn lightgbm xgboost catboost optuna category-
 ```
 
 ## Usage
+You can run the entire pipeline and generate `data/output/submit.csv` with one command:
+```bash
+python src/run_pipeline.py
+```
+
 1. **Preprocess** the raw CSV files and generate feature matrices.
    ```bash
    python src/preprocess.py
