@@ -62,7 +62,7 @@ def main():
         scores.append(f1_score(y[valid_idx], preds))
 
     results = {"f1_scores": scores, "mean_f1": float(np.mean(scores))}
-Path('data/output')
+
 
     output_dir = Path(r"C:\Users\miots\ruruprojects3\MUFG\signate_MUFG\data\output")
 
