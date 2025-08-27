@@ -70,7 +70,9 @@ def main():
 
     test_ids = pd.read_csv(data_dir / "test.csv")["id"]
     submission = pd.DataFrame({"Id": test_ids, "LoanStatus": pred})
+
     submission.to_csv(output_dir / "submit.csv", index=False, header=False)
+
 
 
 if __name__ == "__main__":
