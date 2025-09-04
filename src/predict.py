@@ -42,7 +42,16 @@ def main():
     )
     lgb_pred = lgb_model.predict(X_test)
 
-    xgb_model = xgb.XGBClassifier(
+    # use tuned XGB if available
+    tuned_xgb = {}
+    xgb_params_path = output_dir / "optuna_xgb_best.json"
+    if xgb_params_path.exists():
+        try:
+            with open(xgb_params_path, "r", encoding="utf-8") as f:
+                tuned_xgb = json.load(f).get("best_params", {})
+        except Exception:
+            tuned_xgb = {}
+    base_xgb = dict(
         n_estimators=200,
         learning_rate=0.1,
         max_depth=6,
@@ -54,15 +63,35 @@ def main():
         verbosity=0,
         scale_pos_weight=scale_pos_weight,
     )
+    base_xgb.update(tuned_xgb)
+    xgb_model = xgb.XGBClassifier(**base_xgb)
     xgb_model.fit(X_train, y_train)
     xgb_pred = xgb_model.predict_proba(X_test)[:, 1]
 
-    pred_prob = (lgb_pred + xgb_pred) / 2
+    # default equal-weight ensemble; optionally override with optimized weight
+    weight = 0.5
+    ens_path = output_dir / "ensemble_results.json"
+    if ens_path.exists():
+        try:
+            with open(ens_path, "r", encoding="utf-8") as f:
+                ens = json.load(f)
+                weight = float(ens.get("best_weight", weight))
+        except Exception:
+            pass
+    pred_prob = weight * lgb_pred + (1 - weight) * xgb_pred
 
     thr_path = output_dir / "threshold_results.json"
     if thr_path.exists():
         with open(thr_path, "r", encoding="utf-8") as f:
-            threshold = json.load(f)["best_threshold"]
+            threshold = json.load(f).get("best_threshold", 0.5)
+    # allow ensemble threshold override if provided
+    if ens_path.exists():
+        try:
+            with open(ens_path, "r", encoding="utf-8") as f:
+                ens = json.load(f)
+                threshold = float(ens.get("best_threshold", threshold))
+        except Exception:
+            pass
     else:
         threshold = 0.5
 

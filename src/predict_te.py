@@ -5,8 +5,6 @@ import numpy as np
 import pandas as pd
 from category_encoders import TargetEncoder
 from lightgbm import LGBMClassifier
-from sklearn.metrics import f1_score
-from sklearn.model_selection import StratifiedKFold
 
 
 def add_features(df: pd.DataFrame,
@@ -34,7 +32,6 @@ def add_features(df: pd.DataFrame,
     df['GrossApproval_log'] = np.log1p(df['GrossApproval'])
     df['SBAGuaranteedApproval_log'] = np.log1p(df['SBAGuaranteedApproval'])
     df['TermInYears'] = df['TermInMonths'] / 12
-    # treat high-card discrete ids as categorical strings for TE
     df['CongressionalDistrict'] = df['CongressionalDistrict'].astype(str)
     df['RevolverStatus'] = df['RevolverStatus'].astype(str)
     df['MonthlyPayment'] = df['GrossApproval'] / df['TermInMonths']
@@ -73,16 +70,13 @@ def add_features(df: pd.DataFrame,
     df['BTypeApprovalDiff'] = df['GrossApproval'] - df['BusinessType'].map(btype_gross_mean)
     df['YearInterestDiff'] = df['InitialInterestRate'] - df['ApprovalFiscalYear'].map(year_interest_mean)
     df['YearApprovalDiff'] = df['GrossApproval'] - df['ApprovalFiscalYear'].map(year_gross_mean)
-    # year-program diffs
     yp_int = year_program_interest_mean.to_dict()
     yp_gross = year_program_gross_mean.to_dict()
     keys = list(zip(df['ApprovalFiscalYear'], df['Subprogram']))
     df['YearProgramInterestDiff'] = df['InitialInterestRate'] - pd.Series([yp_int.get(k, np.nan) for k in keys], index=df.index)
     df['YearProgramApprovalDiff'] = df['GrossApproval'] - pd.Series([yp_gross.get(k, np.nan) for k in keys], index=df.index)
-    # frequency encodings
     for col, fmap in freq_maps.items():
         df[f'Freq_{col}'] = df[col].map(fmap).astype(float)
-    # temporal signals
     year_med = int(df['ApprovalFiscalYear'].median())
     df['YearCentered'] = df['ApprovalFiscalYear'] - year_med
     df['Post2010'] = (df['ApprovalFiscalYear'] >= 2010).astype(int)
@@ -95,12 +89,16 @@ def add_features(df: pd.DataFrame,
 def main():
     base_dir = Path(__file__).resolve().parents[1]
     data_dir = base_dir / "data" / "input"
+    output_dir = base_dir / "data" / "output"
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     train = pd.read_csv(data_dir / 'train.csv')
+    test = pd.read_csv(data_dir / 'test.csv')
+
     target_col = 'LoanStatus'
     id_col = 'id'
 
-    # Precompute global statistics used by features (no target leakage)
+    # Precompute global stats
     interest_mean = train['InitialInterestRate'].mean()
     interest_bins = np.quantile(train['InitialInterestRate'], [0, 0.25, 0.5, 0.75, 1.0])
     naics_interest_mean = train.groupby('NaicsSector')['InitialInterestRate'].mean()
@@ -125,7 +123,7 @@ def main():
         'YearProgram': (train['ApprovalFiscalYear'].astype(str) + '_' + train['Subprogram']).value_counts(),
     }
 
-    X = add_features(
+    X_train = add_features(
         train.drop(columns=[target_col]),
         interest_mean, interest_bins,
         naics_interest_mean, naics_gross_mean,
@@ -135,23 +133,55 @@ def main():
         year_program_interest_mean, year_program_gross_mean,
         freq_maps,
     )
-    y = train[target_col].values
+    y_train = train[target_col].values
+    X_test = add_features(
+        test.copy(), interest_mean, interest_bins,
+        naics_interest_mean, naics_gross_mean,
+        prog_interest_mean, prog_gross_mean,
+        btype_interest_mean, btype_gross_mean,
+        year_interest_mean, year_gross_mean,
+        year_program_interest_mean, year_program_gross_mean,
+        freq_maps,
+    )
 
-    cat_cols = X.select_dtypes(include='object').columns.tolist()
-    X = X.drop(columns=[id_col])
+    cat_cols = X_train.select_dtypes(include='object').columns.tolist()
+    X_train = X_train.drop(columns=[id_col])
+    X_test_ids = X_test[id_col].copy()
+    X_test = X_test.drop(columns=[id_col])
 
-    # Prefer TE-specific tuned params if present
+    # best params if available (TE-specific has priority)
     best_params = {}
-    te_params_path = Path('data/output/optuna_te_best.json')
-    if te_params_path.exists():
-        with open(te_params_path, 'r', encoding='utf-8') as f:
+    te_cfg = output_dir / 'optuna_te_best.json'
+    if te_cfg.exists():
+        with te_cfg.open('r', encoding='utf-8') as f:
             best_params = json.load(f).get('best_params', {})
     else:
-        params_path = Path('data/output/optuna_best_params.json')
+        params_path = output_dir / 'optuna_best_params.json'
         if params_path.exists():
-            with open(params_path, 'r', encoding='utf-8') as f:
+            with params_path.open('r', encoding='utf-8') as f:
                 best_params = json.load(f).get('best_params', {})
+
+    # target encoding on full training (final fit)
+    if 'te_smoothing' in best_params or 'te_min_samples_leaf' in best_params:
+        te = TargetEncoder(
+            cols=cat_cols,
+            smoothing=best_params.get('te_smoothing', 1.0),
+            min_samples_leaf=best_params.get('te_min_samples_leaf', 1),
+        )
+    else:
+        te = TargetEncoder(cols=cat_cols)
+    X_train_enc = te.fit_transform(X_train, y_train)
+    X_test_enc = te.transform(X_test)
+
+    # imbalance handling
+    pos = int((y_train == 1).sum())
+    neg = len(y_train) - pos
+    spw = neg / max(pos, 1)
+
     params = {
+        'objective': 'binary',
+        'random_state': 42,
+        'n_estimators': best_params.get('n_estimators', 200),
         'learning_rate': best_params.get('learning_rate', 0.1),
         'num_leaves': best_params.get('num_leaves', 31),
         'max_depth': best_params.get('max_depth', -1),
@@ -160,38 +190,38 @@ def main():
         'bagging_fraction': best_params.get('bagging_fraction', 1.0),
         'lambda_l1': best_params.get('lambda_l1', 0.0),
         'lambda_l2': best_params.get('lambda_l2', 0.0),
-        'scale_pos_weight': best_params.get('scale_pos_weight', 1.0),
-        'n_estimators': 100,
-        'objective': 'binary',
-        'random_state': 42,
+        'scale_pos_weight': best_params.get('scale_pos_weight', spw),
     }
 
-    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
-    scores = []
-    oof = np.zeros(len(y), dtype=float)
-    for train_idx, valid_idx in cv.split(X, y):
-        if 'te_smoothing' in best_params or 'te_min_samples_leaf' in best_params:
-            te = TargetEncoder(cols=cat_cols,
-                               smoothing=best_params.get('te_smoothing', 1.0),
-                               min_samples_leaf=best_params.get('te_min_samples_leaf', 1))
-        else:
-            te = TargetEncoder(cols=cat_cols)
-        X_train = te.fit_transform(X.iloc[train_idx], y[train_idx])
-        X_valid = te.transform(X.iloc[valid_idx])
-        model = LGBMClassifier(**params)
-        model.fit(X_train, y[train_idx])
-        proba = model.predict_proba(X_valid)[:, 1]
-        oof[valid_idx] = proba
-        preds = (proba > 0.5).astype(int)
-        scores.append(f1_score(y[valid_idx], preds))
+    model = LGBMClassifier(**params)
+    model.fit(X_train_enc, y_train)
+    prob = model.predict_proba(X_test_enc)[:, 1]
 
-    results = {"f1_scores": scores, "mean_f1": float(np.mean(scores))}
+    # threshold preference: TE-optimized > ensemble > baseline threshold
+    thr = 0.5
+    te_thr_path = output_dir / 'optuna_te_best.json'
+    if te_thr_path.exists():
+        try:
+            with te_thr_path.open('r', encoding='utf-8') as f:
+                tecfg = json.load(f)
+                thr = float(tecfg.get('best_threshold', thr))
+        except Exception:
+            pass
+    else:
+        for p in ['ensemble_results.json', 'threshold_results.json']:
+            path = output_dir / p
+            if path.exists():
+                try:
+                    with path.open('r', encoding='utf-8') as f:
+                        d = json.load(f)
+                        thr = float(d.get('best_threshold', thr))
+                        break
+                except Exception:
+                    pass
 
-    output_dir = base_dir / "data" / "output"
-
-    np.save(output_dir / 'oof_te.npy', oof)
-    with open(output_dir / 'te_cv_results.json', 'w', encoding='utf-8') as f:
-        json.dump(results, f, ensure_ascii=False, indent=2)
+    pred = (prob > thr).astype(int)
+    submission = pd.DataFrame({'Id': X_test_ids, 'LoanStatus': pred})
+    submission.to_csv(output_dir / 'submit_te.csv', index=False, header=False)
 
 
 if __name__ == '__main__':

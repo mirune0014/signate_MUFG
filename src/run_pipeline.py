@@ -7,6 +7,7 @@ This script executes preprocessing, model training, threshold optimization,
 from preprocess import main as preprocess_main
 from train import main as train_main
 from threshold_opt import main as threshold_main
+from ensemble import main as ensemble_main
 from predict import main as predict_main
 
 
@@ -15,6 +16,11 @@ def main() -> None:
     preprocess_main()
     train_main()
     threshold_main()
+    # optional: ensemble weight/threshold search (safe to run)
+    try:
+        ensemble_main()
+    except Exception:
+        pass
     predict_main()
 
 

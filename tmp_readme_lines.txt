@@ -62,15 +62,9 @@ python src/run_pipeline.py
    ```
    The file `data/output/submit.csv` will be created in the sample submission format.
 
-9. (Optional) Optimize ensemble weight and threshold on OOF.
-   ```bash
-   python src/ensemble.py
-   ```
-   If `data/output/ensemble_results.json` exists, `predict.py` uses its `best_weight` and `best_threshold` automatically.
-
 ## Repository Structure
-- `data/input/` – raw competition data
-- `data/output/` – processed features, evaluation results, and submission file
-- `src/` – preprocessing, training, optimization, and inference scripts
-- `tasks.md` – checklist of steps toward a complete submission
-- `explain.md` – competition overview and additional documentation
+- `data/input/`  Eraw competition data
+- `data/output/`  Eprocessed features, evaluation results, and submission file
+- `src/`  Epreprocessing, training, optimization, and inference scripts
+- `tasks.md`  Echecklist of steps toward a complete submission
+- `explain.md`  Ecompetition overview and additional documentation

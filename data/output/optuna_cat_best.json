@@ -1,0 +1,12 @@
+{
+  "best_params": {
+    "iterations": 640,
+    "depth": 4,
+    "learning_rate": 0.038742131270958484,
+    "l2_leaf_reg": 0.9331767270578362,
+    "bootstrap_type": "Bayesian",
+    "bagging_temperature": 0.5914119699852259
+  },
+  "best_score": 0.6372208436724566,
+  "best_threshold": 0.35000000000000003
+}

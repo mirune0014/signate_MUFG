@@ -1,0 +1,28 @@
+{
+  "group": "NaicsSector",
+  "thresholds": {
+    "Accommodation_food services": 0.42,
+    "Administrative_support_waste management_remediation services": 0.18,
+    "Agriculture_forestry_fishing_hunting": 0.21,
+    "Arts_entertainment_recreation": 0.44,
+    "Construction": 0.51,
+    "Educational services": 0.4,
+    "Finance_insurance": 0.33,
+    "Health care_social assistance": 0.41000000000000003,
+    "Information": 0.4,
+    "Management of companies_enterprises": 0.4,
+    "Manufacturing": 0.38,
+    "Mining_quarrying_oil_gas extraction": 0.4,
+    "Other services (except public administration) ": 0.36,
+    "Professional_scientific_technical services": 0.46,
+    "Real estate_rental_leasing": 0.4,
+    "Retail trade": 0.37,
+    "Transportation_warehousing": 0.34,
+    "Utilities": 0.4,
+    "Wholesale trade": 0.34
+  },
+  "min_support": 150,
+  "global_threshold": 0.4,
+  "global_f1": 0.6384579219558063,
+  "group_f1": 0.6499526963103122
+}

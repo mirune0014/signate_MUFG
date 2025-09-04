@@ -1,0 +1,12 @@
+{
+  "best_threshold": 0.4,
+  "segment": "recent_years",
+  "recent_years": [
+    2023,
+    2024
+  ],
+  "k_recent_unique_years": 2,
+  "f1_recent": 0.5679012345679012,
+  "f1_rest": 0.6475583864118896,
+  "f1_all": 0.6384579219558063
+}

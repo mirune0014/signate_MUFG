@@ -26,19 +26,23 @@ def main():
         valid_data = lgb.Dataset(X[valid_idx], label=y[valid_idx])
         params = {
             "objective": "binary",
-            "metric": "None",
-            "learning_rate": 0.1,
+            "metric": "auc",
+            "learning_rate": 0.05,
             "verbose": -1,
             "scale_pos_weight": scale_pos_weight,
+            "num_leaves": 63,
+            "feature_fraction": 0.9,
+            "bagging_fraction": 0.9,
+            "bagging_freq": 0,
         }
         model = lgb.train(
             params,
             train_data,
             valid_sets=[valid_data],
-            num_boost_round=100,
-            callbacks=[lgb.log_evaluation(0)],
+            num_boost_round=2000,
+            callbacks=[lgb.log_evaluation(0), lgb.early_stopping(stopping_rounds=100, verbose=False)],
         )
-        oof = model.predict(X[valid_idx])
+        oof = model.predict(X[valid_idx], num_iteration=model.best_iteration)
         oof_preds[valid_idx] = oof
         preds = (oof > 0.5).astype(int)
         score = f1_score(y[valid_idx], preds)
